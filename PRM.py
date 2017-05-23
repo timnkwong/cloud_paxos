@@ -26,6 +26,18 @@ def leaderElection():
 def checkStream():
     s
 
+def sendPrepare():
+    s
+
+def sendAck():
+    s
+
+def leaderAccept():
+    s
+
+def cohortAccept():
+    s
+
 # the main function
 setupIPs()
 servsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
