@@ -12,7 +12,14 @@ import time
 MYIP = 0
 MYID = sys.argv[1]
 PORT = 5004
-BALLOTNUM = 0
+
+# int, string
+# ballotNumber, aSiteID
+BALLOTNUM = [0, 0]
+ACCEPTNUM = [0, 0]
+
+# string (file name to be replicated)
+ACCEPTVAL = None
 
 # string to string
 # siteID to IP
@@ -36,7 +43,7 @@ def setupConfig():
     with open(sys.argv[2], 'r') as configFile:
         for line in configFile:
             line = line.split()
-            if line[0] == MYID:
+            if MYID in line[0]:
                 MYIP = line[0]
             else:
                 LISTOFIPS[line[0]] = line[1]
@@ -56,25 +63,40 @@ def checkStream():
         for ballot in splitData:
             ballotArgs = ballot.split(,)
             if "replicate" in ballot:
-                #sendPrepare()
-                #initiate the paxos algorithm
+                ISLEADER = 1
+                BALLOTNUM[0] = BALLOTNUM[0] + 1
+                sendPrepare()
             if "prepare" in ballot:
-                #sendAck(ballotArgs)    
+                incomingBallot = [int(ballotArgs[1], int(ballotArgs[2])
+                if firstGreater(BALLOTNUM, incomingBallot)):
+                    BALLOTNUM[0] = int(ballotArgs[1])
+                    BALLOTNUM[1] = ballotArgs[2]
+                    sendAck(incomingBallot)    
             if "ack" in ballot:
                 #leaderAccept(ballotArgs)
             if "accept" in ballot:
                 #cohortAccept(ballotArgs)
 
+def firstGreater(ballot1, ballot2):
+    if ballot1[0] > ballot2[0]:
+        return true
+    elif ballot1[0] == ballot2[0]:
+        if ballot1[1] > ballot2[1]:
+            return true
+        else
+            return false
+    else
+        return false
+
 def sendPrepare():
-    global ISLEADER, BALLOTNUM
-    ISLEADER = 1
-    BALLOTNUM = BALLOTNUM + 1
     BALLOTDICT[BALLOTNUM] = MYID
     for sock in SOCKDICT:
         SOCKDICT[sock].sendall("prepare," + str(BALLOTNUM) + "," + str(MYID) + " "
 
-def sendAck(ballotArgs):
-
+def sendAck(ballot):
+    destination = str(ballot[1])
+    SOCKDICT[destination].sendall("ack," + str(ballot[0]) + "," + str(ballot[1]) + "," + str(ACCEPTNUM[0]) + "," + ACCEPTNUM[1] + "," + ACCEPTVAL)
+        
 def leaderAccept(ballotArgs):
 
 def cohortAccept(ballotArgs):
