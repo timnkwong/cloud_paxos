@@ -21,9 +21,15 @@ ACCEPTNUM = [0, 0]
 # string (file name to be replicated)
 ACCEPTVAL = None
 
+# dict for phase 2 to check if already have received accept
+ACCEPTDICT = {}
+
+# dict for phase 2 to check for all vals  = null
+ACKDICT = {}
+
 # string to string
 # siteID to IP
-LISTOFIPS = {}
+IPDICT = {}
 
 # the nested 3d dictionary
 THELOG = {}
@@ -32,11 +38,7 @@ THELOG = {}
 # IP to socket
 SOCKDICT = {}
 
-# int to int
-# BALLOTUM to MYID
-BALLOTDICT = {}
-
-ISLEADER = 0
+NUMACKS = 0
 
 # update the LISTOFIPS dict from config file and MYIP
 def setupConfig():
@@ -46,12 +48,12 @@ def setupConfig():
             if MYID in line[0]:
                 MYIP = line[0]
             else:
-                LISTOFIPS[line[0]] = line[1]
+                IPDICT[line[0]] = line[1]
 
 # connect to all other PRMs
 def setupPorts():
-    for siteID in LISTOFIPS
-        addr = (LISTOFIPS[siteID], 5004)
+    for siteID in IPDICT
+        addr = (IPDICT[siteID], 5004)
         SOCKDICT[siteID] = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         SOCKDICT[siteID].connect(addr)
 
@@ -63,16 +65,25 @@ def checkStream():
         for ballot in splitData:
             ballotArgs = ballot.split(,)
             if "replicate" in ballot:
-                ISLEADER = 1
                 BALLOTNUM[0] = BALLOTNUM[0] + 1
                 sendPrepare()
             if "prepare" in ballot:
-                incomingBallot = [int(ballotArgs[1], int(ballotArgs[2])
+                prepareNum = ballotArgs[1]
+                prepareVal = ballotArgs[2]
+                incomingBallot = [int(prepareNum), int(prepareVal)]
                 if firstGreater(BALLOTNUM, incomingBallot)):
-                    BALLOTNUM[0] = int(ballotArgs[1])
-                    BALLOTNUM[1] = ballotArgs[2]
+                    BALLOTNUM[0] = int(prepareNum)
+                    BALLOTNUM[1] = prepareVal
                     sendAck(incomingBallot)    
             if "ack" in ballot:
+                NUMACKS = NUMACKS + 1
+                tempBal  = [int(ballotArgs[1]), ballotArgs[2]]
+                tempAcceptBal = [int(ballotArgs[3]), ballotArgs[4]]
+                tempVal = ballotArgs[5]
+                if NUMACKS == 1:
+                    
+                #if received 2 ack
+                    #continue?
                 #leaderAccept(ballotArgs)
             if "accept" in ballot:
                 #cohortAccept(ballotArgs)
@@ -89,7 +100,6 @@ def firstGreater(ballot1, ballot2):
         return false
 
 def sendPrepare():
-    BALLOTDICT[BALLOTNUM] = MYID
     for sock in SOCKDICT:
         SOCKDICT[sock].sendall("prepare," + str(BALLOTNUM) + "," + str(MYID) + " "
 
@@ -101,6 +111,14 @@ def leaderAccept(ballotArgs):
 
 def cohortAccept(ballotArgs):
 
+# prep the local log to send as a string to other PRMs
+def logToString(aLog):
+
+def stringToLog(aString)
+
+# store the file_reduced.txt into our local log
+def parseReduced(reducedFileName):
+
 # the main function
 setupConfig()
 servsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -110,6 +128,8 @@ servsock.listen(10)
 
 time.sleep(5)
 setupPorts()
+
+# keep while loop running to checkStream()
 
 servsock.close()
 for sock in SOCKDICT:
