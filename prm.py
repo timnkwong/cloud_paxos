@@ -7,16 +7,32 @@
 
 import sys
 import socket
+import time
 
 MYIP = 0
 MYID = sys.argv[1]
 PORT = 5004
+BALLOTNUM = 0
+
+# string to string
+# siteID to IP
 LISTOFIPS = {}
+
+# the nested 3d dictionary
 THELOG = {}
+
+# string to socket
+# IP to socket
 SOCKDICT = {}
 
+# int to int
+# BALLOTUM to MYID
+BALLOTDICT = {}
+
+ISLEADER = 0
+
 # update the LISTOFIPS dict from config file and MYIP
-def setup():
+def setupConfig():
     with open(sys.argv[2], 'r') as configFile:
         for line in configFile:
             line = line.split()
@@ -25,6 +41,7 @@ def setup():
             else:
                 LISTOFIPS[line[0]] = line[1]
 
+# connect to all other PRMs
 def setupPorts():
     for siteID in LISTOFIPS
         addr = (LISTOFIPS[siteID], 5004)
@@ -42,25 +59,28 @@ def checkStream():
                 #sendPrepare()
                 #initiate the paxos algorithm
             if "prepare" in ballot:
-                
+                #sendAck(ballotArgs)    
             if "ack" in ballot:
-
+                #leaderAccept(ballotArgs)
             if "accept" in ballot:
+                #cohortAccept(ballotArgs)
 
 def sendPrepare():
-    s
+    global ISLEADER, BALLOTNUM
+    ISLEADER = 1
+    BALLOTNUM = BALLOTNUM + 1
+    BALLOTDICT[BALLOTNUM] = MYID
+    for sock in SOCKDICT:
+        SOCKDICT[sock].sendall("prepare," + str(BALLOTNUM) + "," + str(MYID) + " "
 
-def sendAck():
-    s
+def sendAck(ballotArgs):
 
-def leaderAccept():
-    s
+def leaderAccept(ballotArgs):
 
-def cohortAccept():
-    s
+def cohortAccept(ballotArgs):
 
 # the main function
-setup()
+setupConfig()
 servsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 servsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 servsock.bind((LOCALHOST, PORT))
@@ -70,3 +90,5 @@ time.sleep(5)
 setupPorts()
 
 servsock.close()
+for sock in SOCKDICT:
+    SOCKDICT[sock].close()
