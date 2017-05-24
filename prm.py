@@ -115,9 +115,85 @@ def cohortAccept(ballotArgs):
 def logToString(aLog):
 
 def stringToLog(aString)
+                               
+# PRM FUNCTIONS #
+def merge(pos1, pos2):
+    p1_dict = THELOG[pos1]['words']          #LINE FORMAT: [word] [count]
+    p2_dict = THELOG[pos2]['words']
+    output = {}
+    for word in p1_dict:
+        if word not in output:   #NEW INSTANCE OF WORD
+            output[word] = p1_dict[word]
+        else:                       #WORD ALREADY EXISTS
+            output[word] = output[word] + p1_dict[word]
+    for word in p2_dict:
+        if word not in output:   #NEW INSTANCE OF WORD
+            output[word] = p2_dict[word]
+        else:                       #WORD ALREADY EXISTS
+            output[word] = output[word] + p2_dict[word]
+    for index in output:
+        print index + ': ' + str(output[index])
+
+def total(pos1, pos2):
+    total_count = 0
+    p1_dict = THELOG[pos1]['words']         
+    p2_dict = THELOG[pos2]['words']
+    for word in p1_dict
+        total_count = total_count + p1_dict[word]
+    for word in p2_dict
+        total_count = total_count + p2_dict[word]
+    return total_count
+
+def print_log():
+    for index in THELOGS:
+        print THELOGS[index]['name']
+
+
+def replicate(filename):
+## placeholders for code referencing ##
+    THELOGS = {} 
+    THELOGS[log_number] = {}       ##log_number = whichever log the file is stored in order
+    THELOGS[log_number]['words'] = {}
+    THELOGS[log_number]['name'] = filename
+    
+## end of placeholders ##
+    readfile = open(filename, 'r')
+    for line in readfile:
+        if (len(line.split()) != 2):
+            pass
+        else:
+            word = line.split()[0]      #word
+            wc = int(line.split()[1])   #word count
+            if word in THELOGS[filename]['words']:     #word already exists in logged dict
+                THELOGS[log_number]['words'][word] = THELOGS[filename]['words'][word] + wc 
+            else:                                       #word doens't exist, add it
+                THELOGS[log_number]['words'][word] = wc
+    words = THELOGS[log_number]['words']        
+    rep_log = 'makenewlog,' + THELOGS[log_number]['name'] + '/'
+    for word in words
+        rep_log = rep_log + word + '+' words[word] + '/' 
+    #send rep_log to other PRMs to replicate
+
+def stringToLog(logString):
+    words = logString.split('/')
+    updatedName = False          #check if log has updated name
+    THELOGS[log_number] = {}
+    THELOGS[log_number]['words'] = {}
+    for line in words:
+        if not updatedName:
+            THELOGS[log_number]['name'] = line
+            updatedName = True
+        else:
+            word = line.split('+')[0]
+            wc = int(line.split('+')[1])
+            THELOGS[log_number]['words'][word] = wc
+    
+
 
 # store the file_reduced.txt into our local log
 def parseReduced(reducedFileName):
+                               
+                           
 
 # the main function
 setupConfig()
