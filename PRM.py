@@ -3,28 +3,46 @@
 # 8234338, 8334492
 # 22 May 2017
 
-# ./PRM portNumber fileOfIPs
+# ./PRM siteID fileOfIPs
 
 import sys
 import socket
 
-LOCALHOST = '127.0.0.1'
-MYPORT = 5004
+MYIP = 0
+MYID = sys.argv[1]
+PORT = 5004
 LISTOFIPS = {}
 THELOG = {}
+SOCKDICT = {}
 
-# update the LISTOFIPS dict from config file
-def setupIPs():
-    with open(sys.argv[1], 'r') as configFile:
+# update the LISTOFIPS dict from config file and MYIP
+def setup():
+    with open(sys.argv[2], 'r') as configFile:
         for line in configFile:
             line = line.split()
-            LISTOFIPS[line[0]] = 1
+            if line[0] == MYID:
+                MYIP = line[0]
+            else:
+                LISTOFIPS[line[0]] = line[1]
 
-def leaderElection():
-    s
-
+def setupPorts():
+    for sock in LISTOFIPS
+        
+#  messages sent with spaces after each other, ballots separated by commas
 def checkStream():
-    s
+    try:
+        rawData = servsock.recv(1024)
+        splitData = rawData.split()
+        for ballot in splitData:
+            ballotArgs = ballot.split(,)
+            if "replicate" in ballot:
+                #sendPrepare()
+                #initiate the paxos algorithm
+            if "prepare" in ballot:
+                
+            if "ack" in ballot:
+
+            if "accept" in ballot:
 
 def sendPrepare():
     s
@@ -39,10 +57,13 @@ def cohortAccept():
     s
 
 # the main function
-setupIPs()
+setup()
 servsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 servsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-servsock.bind((LOCALHOST, MYPORT))
+servsock.bind((LOCALHOST, PORT))
 servsock.listen(10)
-print "Hi"
+
+time.sleep(5)
+setupPorts()
+
 servsock.close()
