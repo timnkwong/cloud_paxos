@@ -21,6 +21,9 @@ ACCEPTNUM = [0, 0]
 # string (file name to be replicated)
 ACCEPTVAL = None
 
+# string (file name proposed to be replicated)
+PROPOSEDVAL = None
+
 # dict for phase 2 to check if already have received accept
 ACCEPTDICT = {}
 
@@ -39,6 +42,7 @@ THELOG = {}
 SOCKDICT = {}
 
 NUMACKS = 0
+NUMACCEPTS = 0
 
 # update the LISTOFIPS dict from config file and MYIP
 def setupConfig():
@@ -59,32 +63,40 @@ def setupPorts():
 
 #  messages sent with spaces after each other, ballots separated by commas
 def checkStream():
+    global BALLOTNUM, PROPOSEDVAL, NUMACKS, NUMACCEPTS, ACCEPTNUM, ACCEPTVAL
     try:
         rawData = servsock.recv(1024)
         splitData = rawData.split()
         for ballot in splitData:
             ballotArgs = ballot.split(,)
             if "replicate" in ballot:
+                # replicate,fileName
                 BALLOTNUM[0] = BALLOTNUM[0] + 1
+                PROPOSEDVAL = ballotArgs[1]
                 sendPrepare()
             if "prepare" in ballot:
+                # prepare,ballot.num, ballot.ID
                 prepareNum = ballotArgs[1]
-                prepareVal = ballotArgs[2]
-                incomingBallot = [int(prepareNum), int(prepareVal)]
-                if firstGreater(BALLOTNUM, incomingBallot)):
+                prepareID = ballotArgs[2]
+                incomingBallot = [int(prepareNum), int(prepareID)]
+                if firstGreater(incomingBallot, BALLOTNUM):
                     BALLOTNUM[0] = int(prepareNum)
-                    BALLOTNUM[1] = prepareVal
+                    BALLOTNUM[1] = prepareID
                     sendAck(incomingBallot)    
             if "ack" in ballot:
+                # ack,proposedBal.num, proposedBal.ID,acceptBal.num,acceptBal.ID,acceptVal
                 NUMACKS = NUMACKS + 1
-                tempBal  = [int(ballotArgs[1]), ballotArgs[2]]
-                tempAcceptBal = [int(ballotArgs[3]), ballotArgs[4]]
-                tempVal = ballotArgs[5]
                 if NUMACKS == 1:
-                    
-                #if received 2 ack
-                    #continue?
-                #leaderAccept(ballotArgs)
+                    tempBal  = [int(ballotArgs[1]), ballotArgs[2]]
+                    tempAcceptBal = [int(ballotArgs[3]), ballotArgs[4]]
+                    tempVal = ballotArgs[5]                    
+                    if tempVal is None:
+                        ACCEPTVAL = PROPOSEDVAL
+                    else:
+                        #does this work? only 3 nodes so maybe?
+                        ACCEPTVAL = tempVal
+                    leaderAccept(
+            #leaderAccept(ballotArgs)
             if "accept" in ballot:
                 #cohortAccept(ballotArgs)
 
