@@ -87,18 +87,21 @@ def checkStream():
                 # ack,proposedBal.num, proposedBal.ID,acceptBal.num,acceptBal.ID,acceptVal
                 NUMACKS = NUMACKS + 1
                 if NUMACKS == 1:
-                    tempBal  = [int(ballotArgs[1]), ballotArgs[2]]
-                    tempAcceptBal = [int(ballotArgs[3]), ballotArgs[4]]
-                    tempVal = ballotArgs[5]                    
-                    if tempVal is None:
+                    incomingBal  = [int(ballotArgs[1]), ballotArgs[2]]
+                    incomingAcceptBal = [int(ballotArgs[3]), ballotArgs[4]]
+                    incomingVal = ballotArgs[5]                    
+                    if incomingVal is None:
                         ACCEPTVAL = PROPOSEDVAL
                     else:
                         #does this work? only 3 nodes so maybe?
-                        ACCEPTVAL = tempVal
-                    leaderAccept(
-            #leaderAccept(ballotArgs)
+                        if firstGreater(ACCEPTNUM, incomingAcceptBal):
+                            ACCEPTVAL = PROPOSEDVAL
+                        else:
+                            ACCEPTVAL = incomingVal
+                    leaderAccept()
             if "accept" in ballot:
                 #cohortAccept(ballotArgs)
+                s
 
 def firstGreater(ballot1, ballot2):
     if ballot1[0] > ballot2[0]:
@@ -106,21 +109,23 @@ def firstGreater(ballot1, ballot2):
     elif ballot1[0] == ballot2[0]:
         if ballot1[1] > ballot2[1]:
             return true
-        else
+        else:
             return false
-    else
+    else:
         return false
 
 def sendPrepare():
     for sock in SOCKDICT:
-        SOCKDICT[sock].sendall("prepare," + str(BALLOTNUM) + "," + str(MYID) + " "
+        SOCKDICT[sock].sendall("prepare," + str(BALLOTNUM[0]) + "," + BALLOTNUM[1] + " ")
 
 def sendAck(ballot):
     destination = str(ballot[1])
     SOCKDICT[destination].sendall("ack," + str(ballot[0]) + "," + str(ballot[1]) + "," + str(ACCEPTNUM[0]) + "," + ACCEPTNUM[1] + "," + ACCEPTVAL)
-        
-def leaderAccept(ballotArgs):
 
+def leaderAccept():
+    for sock in SOCKDICT:
+        SOCKDICT[sock].sendall("accept," + str(BALLOTNUM[0]) + "," + ACCEPTVAL
+                               
 def cohortAccept(ballotArgs):
 
 # prep the local log to send as a string to other PRMs
