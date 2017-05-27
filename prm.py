@@ -10,10 +10,10 @@ import socket
 import time
 
 MYIP = 0
-MYID = sys.argv[1]
+MYID = int(sys.argv[1])
 PORT = 5004
 
-# int, string
+# int, int
 # ballotNumber, aSiteID
 BALLOTNUM = [0, 0]
 ACCEPTNUM = [0, 0]
@@ -43,6 +43,7 @@ SOCKDICT = {}
 
 NUMACKS = 0
 NUMACCEPTS = 0
+ISLEADER = 0
 
 # update the LISTOFIPS dict from config file and MYIP
 def setupConfig():
@@ -63,7 +64,7 @@ def setupPorts():
 
 #  messages sent with spaces after each other, ballots separated by commas
 def checkStream():
-    global BALLOTNUM, PROPOSEDVAL, NUMACKS, NUMACCEPTS, ACCEPTNUM, ACCEPTVAL
+    global BALLOTNUM, PROPOSEDVAL, NUMACKS, NUMACCEPTS, ISLEADER, ACCEPTNUM, ACCEPTVAL
     try:
         rawData = servsock.recv(1024)
         splitData = rawData.split()
@@ -73,41 +74,57 @@ def checkStream():
                 # replicate,fileName
                 BALLOTNUM[0] = BALLOTNUM[0] + 1
                 PROPOSEDVAL = ballotArgs[1]
+                ISLEADER = 1
                 sendPrepare()
             if "prepare" in ballot:
                 # prepare,ballot.num, ballot.ID
-                prepareNum = ballotArgs[1]
-                prepareID = ballotArgs[2]
-                incomingBallot = [int(prepareNum), int(prepareID)]
+                incomingNum = int(ballotArgs[1])
+                incomingID = int(ballotArgs[2])
+                incomingBallot = [incomingNum, incomingID]
                 if firstGreater(incomingBallot, BALLOTNUM):
-                    BALLOTNUM[0] = int(prepareNum)
+                    BALLOTNUM[0] = prepareNum
                     BALLOTNUM[1] = prepareID
-                    sendAck(incomingBallot)    
+                    sendAck(incomingBallot)
             if "ack" in ballot:
-                # ack,proposedBal.num, proposedBal.ID,acceptBal.num,acceptBal.ID,acceptVal
+                # ack,proposedBal.num,proposedBal.ID,acceptBal.num,acceptBal.ID,acceptVal
                 NUMACKS = NUMACKS + 1
                 if NUMACKS == 1:
-                    incomingBal  = [int(ballotArgs[1]), ballotArgs[2]]
-                    incomingAcceptBal = [int(ballotArgs[3]), ballotArgs[4]]
-                    incomingVal = ballotArgs[5]                    
-                    if incomingVal is None:
-                        ACCEPTVAL = PROPOSEDVAL
+                    incomingBal  = [int(ballotArgs[1]), int(ballotArgs[2])]
+                    incomingAcceptBal = [int(ballotArgs[3]), int(ballotArgs[4])]
+                    incomingVal = ballotArgs[5]
+                    if (incomingVal or ACCEPTVAL) is None:
+                        myTempVal = PROPOSEDVAL
                     else:
                         #does this work? only 3 nodes so maybe?
                         if firstGreater(ACCEPTNUM, incomingAcceptBal):
-                            ACCEPTVAL = PROPOSEDVAL
+                            myTempVal = PROPOSEDVAL
                         else:
-                            ACCEPTVAL = incomingVal
-                    leaderAccept()
+                            myTempVal = incomingVal
+                    leaderAccept(myTempVal)
             if "accept" in ballot:
-                #cohortAccept(ballotArgs)
-                s
+                # accept,ballotNum.num,ballotNum.ID,myTempVal
+                NUMACCEPTS = NUMACCEPTS + 1
+                if NUMACCEPTS = 1:
+                    incomingBal = [int(ballotArgs[1]), int(ballotArgs[2])]
+                    incomingAcceptVal = ballotArgs[3]
+                    if firstGreater(incomingBal, BALLOTNUM):
+                        ACCEPTNUM[0] = incomingBal[0]
+                        ACCEPTNUM[1] = incomingBal[1]
+                        ACCEPTVAL = incomingAcceptVal
+                        cohortAccept(incomingBal, incomingAcceptVal)
+                    if (ISLEADER):
+                        decide()
+            if "decide" in ballot:
+                # decide,fileNameToReplicate
+                replicate(ACCEPTVAL)
 
 def firstGreater(ballot1, ballot2):
     if ballot1[0] > ballot2[0]:
         return true
     elif ballot1[0] == ballot2[0]:
         if ballot1[1] > ballot2[1]:
+            return true
+        elif: ballot1[1] == ballot2[1]:
             return true
         else:
             return false
@@ -116,17 +133,23 @@ def firstGreater(ballot1, ballot2):
 
 def sendPrepare():
     for sock in SOCKDICT:
-        SOCKDICT[sock].sendall("prepare," + str(BALLOTNUM[0]) + "," + BALLOTNUM[1] + " ")
+        SOCKDICT[sock].sendall("prepare," + str(BALLOTNUM[0]) + "," + str(BALLOTNUM[1]) + " ")
 
 def sendAck(ballot):
     destination = str(ballot[1])
-    SOCKDICT[destination].sendall("ack," + str(ballot[0]) + "," + str(ballot[1]) + "," + str(ACCEPTNUM[0]) + "," + ACCEPTNUM[1] + "," + ACCEPTVAL)
+    SOCKDICT[destination].sendall("ack," + str(ballot[0]) + "," + str(ballot[1]) + "," + str(ACCEPTNUM[0]) + "," + str(ACCEPTNUM[1]) + "," + ACCEPTVAL)
 
-def leaderAccept():
+def leaderAccept(tempAcceptVal):
     for sock in SOCKDICT:
-        SOCKDICT[sock].sendall("accept," + str(BALLOTNUM[0]) + "," + ACCEPTVAL
+        SOCKDICT[sock].sendall("accept," + str(BALLOTNUM[0]) + "," + tempAcceptVal)
                                
-def cohortAccept(ballotArgs):
+def cohortAccept(b, v):
+    for sock in SOCKDICT:
+        SOCKDICT[sock].sendall("accept," + str(b[0]) + "," + str(b[1]) + "," + v)
+
+def decide():
+    for sock in SOCKDICT:
+        SOCKDICT[sock].sendall("decide," + ACCEPTVAL)
 
 # prep the local log to send as a string to other PRMs
 def logToString(aLog):
