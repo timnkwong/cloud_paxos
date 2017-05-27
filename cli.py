@@ -4,7 +4,9 @@
 ##
 ##CLI IMPLEMENTATION
 
-MYID = '11111'
+import socket
+
+MYID = '127.0.0.1'
 
 ports = [None] * 4
 for i in range(4):
@@ -41,105 +43,116 @@ def setup():
         except Exception:
             pass
 
-def cli_main(arg):
-    message = arg
-    if (arg == 'map'):
-        process_map(sys.argv[2])
-        return
-    elif (arg == 'reduce'):
-        for i in range(2, len(sys.argv)):
-            if(i < len(sys.argv) - 1):
-                message = message + sys.argv[i] + ','
-            else:
-                message = message + sys.argv[i]
-        process_reduce(message)
-        return
-    elif (arg == 'replicate'):
-        message = message + ',' + sys.argv[2]
-    elif (arg == 'stop'):
-        pass
-    elif (arg == 'resume'):
-        pass
-    elif (arg == 'total'):
-        for i in range(2, len(sys.argv)):
-            if(i < len(sys.argv) - 1):
-                message = message + sys.argv[i] + ','
-            else:
-                message = message + sys.argv[i]    
-        query_total(in_str)
-    elif (arg == 'print'):
-        pass
-    elif (arg == 'merge'):
-        message = message + ',' + sys.argv[2] + ',' + sys.argv[3]
-    else:
-        print 'Invalid argument!'
-        return
+def cli_main():
     while True:
-        try:
-            ports[3].sendall(message)
-            break
-        except Exception:
+        command = raw_input("Enter command: \n")
+        arg = command.split()
+        message = arg[0]
+        if (arg[0] == 'map'):
+            #process_map(arg[1])
+            print "Mapping " + arg[1]
+        elif (arg[0] == 'reduce'):
+            for i in range(1, len(arg)):
+                if(i < len(arg) - 1):
+                    message = message + arg[i] + ','
+                else:
+                    message = message + arg[i]
+            print "Reducing!"
+            #process_reduce(message)
+        elif (arg[0] == 'replicate'):
+            message = message + ',' + arg[1]
+        elif (arg[0] == 'stop'):
+            print "Stopping PRM"
+#            pass
+        elif (arg[0] == 'resume'):
+            print "Resuming PRM"
+#            pass
+        elif (arg[0] == 'total'):
+            for i in range(1, len(arg)):
+                if(i < len(arg) - 1):
+                    message = message + arg[i] + ','
+                else:
+                    message = message + arg[i]    
+            #query_total(in_str)
+            print "Totaling!"
+        elif (arg[0] == 'print'):
             pass
-
-##########################
-
-def replicate(filename):
-## placeholders for code referencing ##
-    PRM_logs = {} 
-    PRM_logs[log_number] = {}       ##log_number = whichever log the file is stored in order
-    PRM_logs[log_number]['words'] = {}
-    PRM_logs[log_number]['name'] = filename
-## end of placeholders ##
-    for line in filename:
-        word = line.split()[0]      #word
-        wc = int(line.split()[1])   #word count
-        if word in PRM_logs[filename]['words']:     #word already exists in logged dict
-            PRM_logs[log_number]['words'][word] = PRM_logs[filename]['words'][word] + wc 
-        else:                                       #word doens't exist, add it
-            PRM_logs[log_number]['words'][word] = wc
-    rep_log = PRM_logs[log_number]
-    #send rep_log to other PRMs to replicate
-    
+        elif (arg[0] == 'merge'):
+            message = message + ',' + arg[1] + ',' + arg[2]
+            print "Merging " + arg[1] + ' and ' + arg[2]
+        elif (arg[0] == 'exit'):
+            print "Exiting!"
+            return
+        else:
+            print 'Invalid argument!'
             
+##        while True:
+##            try:
+##                ports[3].sendall(message)
+##                break
+##            except Exception:
+##                pass
+cli_main()
+
 ##########################
-
-def total(pos1, pos2):
-    total_count = 0
-    fpos1 = open(pos1, 'r')
-    fpos2 = open(pos2, 'r')
-    for line in fpos1:
-        word = line.split()
-        total_count = total_count + int(word[1])
-    for line in fpos2:
-        word = line.split()
-        total_count = total_count + int(word[1])
-    return total_count
-
-def print_log():
-    for filename in logs:
-        print filename
-
-def merge(pos1, pos2):
-    fpos1 = open(pos1, 'r')         #LINE FORMAT: [word] [count]
-    fpos2 = open(pos2, 'r')
-    output = {}
-    for line in fpos1:
-        word = line.split()
-        if word[0] == 'filename':
-            pass
-        elif word[0] not in output:   #NEW INSTANCE OF WORD
-            output[word[0]] = int(word[1])
-        else:                       #WORD ALREADY EXISTS
-            output[word[0]] = output[word[0]] + int(word[1])
-    for line in fpos2:
-        word = line.split()
-        if word[0] == 'filename':
-            pass
-        if word[0] not in output:   #NEW INSTANCE OF WORD
-            output[word[0]] = int(word[1])
-        else:                       #WORD ALREADY EXISTS
-            output[word[0]] = output[word[0]] + int(word[1])
-    for index in output:
-        print index + ': ' + str(output[index])
+##
+##def replicate(filename):
+#### placeholders for code referencing ##
+##    PRM_logs = {} 
+##    PRM_logs[log_number] = {}       ##log_number = whichever log the file is stored in order
+##    PRM_logs[log_number]['words'] = {}
+##    PRM_logs[log_number]['name'] = filename
+#### end of placeholders ##
+##    for line in filename:
+##        word = line.split()[0]      #word
+##        wc = int(line.split()[1])   #word count
+##        if word in PRM_logs[filename]['words']:     #word already exists in logged dict
+##            PRM_logs[log_number]['words'][word] = PRM_logs[filename]['words'][word] + wc 
+##        else:                                       #word doens't exist, add it
+##            PRM_logs[log_number]['words'][word] = wc
+##    rep_log = PRM_logs[log_number]
+##    #send rep_log to other PRMs to replicate
+##    
+##            
+############################
+##
+##def total(pos1, pos2):
+##    total_count = 0
+##    fpos1 = open(pos1, 'r')
+##    fpos2 = open(pos2, 'r')
+##    for line in fpos1:
+##        word = line.split()
+##        total_count = total_count + int(word[1])
+##    for line in fpos2:
+##        word = line.split()
+##        total_count = total_count + int(word[1])
+##    return total_count
+##
+##def print_log():
+##    for filename in logs:
+##        print filename
+##
+##def merge(pos1, pos2):
+##    fpos1 = open(pos1, 'r')         #LINE FORMAT: [word] [count]
+##    fpos2 = open(pos2, 'r')
+##    output = {}
+##    for line in fpos1:
+##        word = line.split()
+##        if word[0] == 'filename':
+##            pass
+##        elif word[0] not in output:   #NEW INSTANCE OF WORD
+##            output[word[0]] = int(word[1])
+##        else:                       #WORD ALREADY EXISTS
+##            output[word[0]] = output[word[0]] + int(word[1])
+##    for line in fpos2:
+##        word = line.split()
+##        if word[0] == 'filename':
+##            pass
+##        if word[0] not in output:   #NEW INSTANCE OF WORD
+##            output[word[0]] = int(word[1])
+##        else:                       #WORD ALREADY EXISTS
+##            output[word[0]] = output[word[0]] + int(word[1])
+##    for index in output:
+##        print index + ': ' + str(output[index])
 
 
