@@ -5,6 +5,7 @@
 ##CLI IMPLEMENTATION
 
 import socket
+import sys
 
 MYID = '127.0.0.1'
 
@@ -16,29 +17,30 @@ for i in range(4):
     ##ports[0] = reducer
     ##ports[1] = prm/replicator
 port_nums = [5001, 5002, 5003, 5004]
+port_nums[3] = int(sys.argv[1])
 
 def setup():
+#    while True:
+#        try:
+#            ports[0].connect((MYID, 5001)) 
+#            break
+#        except Exception:
+#            pass
+#    while True:
+#        try:
+#            ports[1].connect((MYID, 5002))
+#            break
+#        except Exception:
+#            pass
+#    while True:
+#        try:
+#            ports[2].connect((MYID, 5003))
+#            break
+#        except Exception:
+#           pass
     while True:
         try:
-            ports[0].connect((MYID, 5001)) 
-            break
-        except Exception:
-            pass
-    while True:
-        try:
-            ports[1].connect((MYID, 5002))
-            break
-        except Exception:
-            pass
-    while True:
-        try:
-            ports[2].connect((MYID, 5003))
-            break
-        except Exception:
-            pass
-    while True:
-        try:
-            ports[3].connect((MYID, 5004))
+            ports[3].connect((MYID, port_nums[3]))
             break
         except Exception:
             pass
@@ -46,6 +48,8 @@ def setup():
 def cli_main():
     while True:
         command = raw_input("Enter command: \n")
+        if(len(command) == 0):
+            continue
         arg = command.split()
         message = arg[0]
         if (arg[0] == 'map'):
@@ -56,42 +60,44 @@ def cli_main():
                 if(i < len(arg) - 1):
                     message = message + arg[i] + ','
                 else:
-                    message = message + arg[i]
+                    message = message + arg[i] + " "
             print "Reducing!"
             #process_reduce(message)
         elif (arg[0] == 'replicate'):
-            message = message + ',' + arg[1]
+            message = message + ',' + arg[1] + " "
+            print "Sent replicate"
         elif (arg[0] == 'stop'):
             print "Stopping PRM"
-#            pass
+            pass
         elif (arg[0] == 'resume'):
             print "Resuming PRM"
-#            pass
+            pass
         elif (arg[0] == 'total'):
             for i in range(1, len(arg)):
                 if(i < len(arg) - 1):
                     message = message + arg[i] + ','
                 else:
-                    message = message + arg[i]    
-            #query_total(in_str)
+                    message = message + arg[i] + " "   
             print "Totaling!"
         elif (arg[0] == 'print'):
             pass
         elif (arg[0] == 'merge'):
-            message = message + ',' + arg[1] + ',' + arg[2]
+            message = message + ',' + arg[1] + ',' + arg[2] + " "
             print "Merging " + arg[1] + ' and ' + arg[2]
         elif (arg[0] == 'exit'):
             print "Exiting!"
             return
         else:
             print 'Invalid argument!'
-            
-##        while True:
-##            try:
-##                ports[3].sendall(message)
-##                break
-##            except Exception:
-##                pass
+        while True:
+            try:
+                ports[3].sendall(message + " ")
+                break
+            except Exception:
+                pass
+
+setup()
+print "Done with setup"
 cli_main()
 
 ##########################
